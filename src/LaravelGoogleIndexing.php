@@ -68,14 +68,19 @@ class LaravelGoogleIndexing
      * @return mixed
      */
     public function multiplePublish(array $urls){
-        $batch=$this->indexingService->createBatch();
+        $this->googleClient->setUseBatch(true);
+        $this->indexingService = new Google_Service_Indexing($this->googleClient);
+        $batch = $this->indexingService->createBatch();
         $postBdoy = new Google_Service_Indexing_UrlNotification();
-        foreach ($urls as $key => $url) {
-            $postBdoy->setUrl($url);
-            $postBdoy->setType($key);
-            $batch->add($this->indexingService->urlNotifications->publish($postBdoy));
+        foreach ($urls as  $url) {
+            foreach ($url as $key=>$uri){
+                $postBdoy->setUrl($uri);
+                $postBdoy->setType($key);
+                $batch->add($this->indexingService->urlNotifications->publish($postBdoy));
+            }
         }
         $results = $batch->execute();
+
         return $results;
 
     }
